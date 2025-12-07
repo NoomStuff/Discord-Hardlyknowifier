@@ -1,8 +1,8 @@
 # Discord hardlyknowifier
 
 This script looks in a Discord channel for any words ending with `er`, `ur`, `ure`, & `or` and automatically replies with the classic
-**“<word>? I hardly know ’er!”**
-response on your account. Being funny has never been easier!
+**“`<word>`? I hardly know ’er!”**
+response using your account. Being funny has never been easier!
 Robust, highly customisable and of course... ridiculously overengineered
 
 ## ⭐ Features
