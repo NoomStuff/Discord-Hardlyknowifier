@@ -220,6 +220,39 @@ def main():
                     skip_reasons += f"'{word}' has a vowel before '{trigger}'. "
                     continue
 
+                if any(character.isdigit() for character in word):
+                    skip_reasons += f"'{word}' contains numbers. "
+                    continue
+                
+                vowel_streak = 0
+                consonant_streak = 0
+                has_five_vowels = False
+                has_five_consonants = False
+                for character in word.lower():
+                    if character.isalpha():
+                        if character in "aeiou":
+                            vowel_streak += 1
+                            consonant_streak = 0
+                        else:
+                            consonant_streak += 1
+                            vowel_streak = 0
+                    else:
+                        vowel_streak = 0
+                        consonant_streak = 0
+
+                    if vowel_streak >= 5:
+                        has_five_vowels = True
+                    if consonant_streak >= 5:
+                        has_five_consonants = True
+
+                if has_five_vowels:
+                    skip_reasons += f"'{word}' has 5 consecutive vowels. "
+                    continue
+
+                if has_five_consonants:
+                    skip_reasons += f"'{word}' has 5 consecutive consonants. "
+                    continue
+
 
                 print(f"{get_timestamp()} Found message with trigger '{trigger}', replying.")
                 reply_text = f"{word.capitalize()}? I hardly know 'er!"

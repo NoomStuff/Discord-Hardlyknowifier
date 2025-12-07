@@ -42,7 +42,8 @@ The script will automatically reply if:
 3. The word is *not* in `ignored.txt`
 3. The word is long enough to make sense
 4. The letter before the trigger is not a vowel
-5. The bot isn’t responding to itself
+5. There are no numbers in the word
+6. The word does not have 5 vowels or consonants in a row
 
 It also works with any casing, if it has an **s** at the end, and even if the message has multiple words that get triggered.
 
