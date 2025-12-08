@@ -33,7 +33,7 @@ These are stored in `config.txt`. Rerun the script after the file is made.
 > **Do NOT share, upload or commit it anywhere else.**
 > [How to get your Discord token](https://www.youtube.com/watch?v=5SRwnLYdpJs)
 
-## ⚙️ How It Works
+## 🚀 How It Works
 
 The script will automatically reply if:
 
@@ -47,6 +47,24 @@ The script will automatically reply if:
 7. The word does not have more than 2 of the same letter in a row
 
 It also works with any casing, if it has an **s** at the end, and even if the message has multiple words that get triggered.
+
+## ⚙️ Options
+
+The script offers the following options:
+
+`--config`: Change your settings by setting your Discord token, Discord channel ID, and whether to ignore your own messages:
+```
+python automessage.py --config
+```
+
+`--channel`: Set the channel for that the bot will send messages to:
+```
+python automessage.py --channel
+```
+
+`--help`: Show argument help information for the script:
+```
+python automessage.py --help
 
 ---
 

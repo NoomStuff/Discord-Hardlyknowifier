@@ -1,9 +1,11 @@
 import json
+import sys
+import os
+import random
 import time
 import re
 from datetime import datetime
 from http.client import HTTPSConnection
-import os
 
 CONFIG_FILE = "config.txt"
 IGNORED_FILE = "ignored.txt"
@@ -25,47 +27,54 @@ def read_config():
     try:
         with open(CONFIG_FILE, "r", encoding="utf-8") as f:
             lines = f.read().splitlines()
-            if len(lines) >= 2:
-                token = lines[0].strip()
-                channel = lines[1].strip()
-                ignore_self = False
-                if len(lines) >= 3:
-                    ignore_self = lines[2].strip().lower() == "true"
-                return token, channel, ignore_self
-    except Exception as e:
-        print(f"{get_timestamp()} Error reading config: {e}")
+            token = lines[0].strip()
+            channel = lines[1].strip()
+            ignore_self = lines[2].strip().lower() == "true"
+            return token, channel, ignore_self
+    except Exception as error:
+        if not isinstance(error, FileNotFoundError):
+            print(f"{get_timestamp()} Error reading config: {error}")
     return None, None, None
 
 
 def write_config(token, channel_id, ignore_self):
-    with open(CONFIG_FILE, "w", encoding="utf-8") as f:
-        f.write(token + "\n" + channel_id + "\n" + str(ignore_self))
+    try:
+        with open(CONFIG_FILE, "w", encoding="utf-8") as file:
+            file.write(token + "\n" + channel_id + "\n" + str(ignore_self))
+    except Exception as error:
+        print(f"{get_timestamp()} Error writing config: {error}")
+        input("Press Enter to exit...")
+        sys.exit()
 
 
 def configure():
-    token = input("Discord token: ")
-    channel = input("Discord channel ID: ")
-    ignore_self = input("Ignore your own messages? (y/n): ").strip().lower() == "y"
-    write_config(token, channel, ignore_self)
-    print("Written config to config.txt, please rerun to start!")
-    time.sleep(2)
-    exit()
+    try:
+        token = input("Discord token: ")
+        channel = input("Discord channel ID: ")
+        ignore_self = input("Ignore your own messages? (y/n): ").strip().lower() == "y"
+        write_config(token, channel, ignore_self)
+        print("Written config to config.txt. Continuing with new configuration...")
+        return token, channel, ignore_self
+    except Exception as error:
+        print(f"{get_timestamp()} Error configuring: {error}")
+        input("Press Enter to exit...")
+        sys.exit()
 
 
 def get_connection():
-    return HTTPSConnection("discordapp.com", 443)
+    return HTTPSConnection("discord.com", 443)
 
 
 def get_last_message(token, channel_id):
     try:
-        headers = {"authorization": token, "host": "discordapp.com"}
-        connection = get_connection()
-        connection.request("GET", f"/api/v9/channels/{channel_id}/messages?limit=1", headers=headers)
-        response = connection.getresponse()
+        headers = {"authorization": token, "host": "discord.com"}
+        connectionection = get_connection()
+        connectionection.request("GET", f"/api/v9/channels/{channel_id}/messages?limit=1", headers=headers)
+        response = connectionection.getresponse()
         data = response.read().decode()
-        connection.close()
-    except Exception as e:
-        print(f"{get_timestamp()} Network error getting messages: {e}")
+        connectionection.close()
+    except Exception as error:
+        print(f"{get_timestamp()} Network error getting messages: {error}")
         return None
 
     if not data:
@@ -75,26 +84,26 @@ def get_last_message(token, channel_id):
         if response.status != 200:
             print(f"{get_timestamp()} Failed fetching messages ({response.status}): {data}")
             return None
-        arr = json.loads(data)
-        return arr[0] if arr else None
-    except Exception as e:
-        print(f"{get_timestamp()} Error parsing message response: {e}")
+        array = json.loads(data)
+        return array[0] if array else None
+    except Exception as error:
+        print(f"{get_timestamp()} Error parsing message response: {error}")
         return None
 
 
 def send_message(token, channel_id, content):
     payload = json.dumps({"content": content})
-    headers = {"content-type": "application/json", "authorization": token, "host": "discordapp.com"}
+    headers = {"content-type": "application/json", "authorization": token, "host": "discord.com"}
 
     while True:
         try:
-            connection = get_connection()
-            connection.request("POST", f"/api/v9/channels/{channel_id}/messages", payload, headers)
-            response = connection.getresponse()
+            connectionection = get_connection()
+            connectionection.request("POST", f"/api/v9/channels/{channel_id}/messages", payload, headers)
+            response = connectionection.getresponse()
             body = response.read().decode()
-            connection.close()
-        except Exception as e:
-            print(f"{get_timestamp()} Network error sending message: {e}")
+            connectionection.close()
+        except Exception as error:
+            print(f"{get_timestamp()} Network error sending message: {error}")
             return False
 
         if response.status == 429:
@@ -114,13 +123,31 @@ def send_message(token, channel_id, content):
         return False
 
 
+def set_channel():
+    config = read_config()
+    if config:
+        token = config[0]
+        channel = input("Discord channel ID: ")
+        _, _, ignore_self = read_config()
+        write_config(token, channel, ignore_self)
+        print("Written config to config.txt, please rerun to start!")
+
+
+def show_help():
+    print("Usage:")
+    print("  'python hardlyknowifier.py'               :  Runs the bot. Sit back and watch pure comedy gold.")
+    print("  'python hardlyknowifier.py --config'      :  Configure settings.")
+    print("  'python hardlyknowifier.py --channel'     :  Set channel to send messages to.")
+    print("  'python hardlyknowifier.py --help'        :  Show help (You just did that lol).")
+
+
 def load_list_file(filename):
     if os.path.exists(filename):
         try:
             with open(filename, "r", encoding="utf-8") as file:
                 return {line.strip().lower() for line in file if line.strip()}
-        except Exception as e:
-            print(f"{get_timestamp()} Error loading {filename}: {e}")
+        except Exception as error:
+            print(f"{get_timestamp()} Error loading {filename}: {error}")
     return set()
 
 
@@ -131,11 +158,24 @@ def check_blacklist(word):
     return False
 
 
+def get_arguments():
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "--config":
+            configure()
+            return
+        elif sys.argv[1] == "--channel":
+            set_channel()
+            return
+        elif sys.argv[1] == "--help":
+            show_help()
+            return
+
+
 def main():
     token, channel, ignore_self = read_config()
     if not token or not channel:
         print(f"{get_timestamp()} No config was found. Running configuration setup.")
-        configure()
+        token, channel, ignore_self = configure()
 
     ignored = load_list_file(IGNORED_FILE)
     triggers = load_list_file(TRIGGERS_FILE)
@@ -150,7 +190,7 @@ def main():
     while True:
         message = get_last_message(token, channel)
         if not message:
-            time.sleep(1)
+            time.sleep(1 + random.uniform(0.05, 0.25))
             continue
 
         message_timestamp = message.get("id")
@@ -159,25 +199,25 @@ def main():
         author = message.get("author", {}).get("id")
 
         if message_timestamp == last_timestamp:
-            time.sleep(1)
+            time.sleep(1 + random.uniform(0.05, 0.25))
             continue
         last_timestamp = message_timestamp
 
         # get own user id, used for ignoring own messages
         if my_user_id is None:
             try:
-                conn = get_connection()
-                conn.request("GET", "/api/v9/users/@me", headers={"authorization": token})
-                resp = conn.getresponse()
-                data = resp.read().decode()
-                conn.close()
-                if resp.status == 200:
+                connection = get_connection()
+                connection.request("GET", "/api/v9/users/@me", headers={"authorization": token})
+                responce = connection.getresponse()
+                data = responce.read().decode()
+                connection.close()
+                if responce.status == 200:
                     me = json.loads(data)
                     my_user_id = me.get("id")
                 else:
-                    print(f"{get_timestamp()} Failed to fetch @me ({resp.status}): {data}")
-            except Exception as e:
-                print(f"{get_timestamp()} Error fetching @me: {e}")
+                    print(f"{get_timestamp()} Failed to fetch @me ({responce.status}): {data}")
+            except Exception as error:
+                print(f"{get_timestamp()} Error fetching @me: {error}")
 
         # Ignore own messages if configured
         if ignore_self and author == my_user_id:
@@ -278,7 +318,7 @@ def main():
             else:
                 print(f"{get_timestamp()} Found message has no trigger, skipping.")
 
-        time.sleep(1)
+        time.sleep(0.5 + random.uniform(0.05, 0.25))
 
 
 if __name__ == "__main__":
