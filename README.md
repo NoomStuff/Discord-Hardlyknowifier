@@ -40,10 +40,11 @@ The script will automatically reply if:
 1. It contains at least one word ending in a trigger 
 2. The word is *not* blacklisted (filters out slurs)
 3. The word is *not* in `ignored.txt`
-3. The word is long enough to make sense
+3. The word is *not* too short or too long
 4. The letter before the trigger is not a vowel
 5. There are no numbers in the word
 6. The word does not have 5 vowels or consonants in a row
+7. The word does not have more than 2 of the same letter in a row
 
 It also works with any casing, if it has an **s** at the end, and even if the message has multiple words that get triggered.
 

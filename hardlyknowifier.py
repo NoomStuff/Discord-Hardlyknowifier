@@ -215,6 +215,10 @@ def main():
                 if len(word) <= len(trigger) + 1:
                     skip_reasons += f"'{word}' is too short. "
                     continue
+                
+                if len(word) - len(trigger) > 20:
+                    skip_reasons += f"'{word}' is too long. "
+                    continue
 
                 if word[-len(trigger)-1] in "aeiou":
                     skip_reasons += f"'{word}' has a vowel before '{trigger}'. "
@@ -223,6 +227,11 @@ def main():
                 if any(character.isdigit() for character in word):
                     skip_reasons += f"'{word}' contains numbers. "
                     continue
+                
+                if re.search(r"(.)\1{2,}", word):
+                    skip_reasons += f"'{word}' has too many repeated letters in a row. "
+                    continue
+
                 
                 vowel_streak = 0
                 consonant_streak = 0
