@@ -126,11 +126,20 @@ def send_message(token, channel_id, content):
 def set_channel():
     config = read_config()
     if config:
-        token = config[0]
-        channel = input("Discord channel ID: ")
-        _, _, ignore_self = read_config()
-        write_config(token, channel, ignore_self)
-        print("Written config to config.txt, please rerun to start!")
+        try:
+            token = config[0]
+            channel = input("Discord channel ID: ")
+            write_config(token, channel)
+            print("\nWritten config to config.txt. Continuing with new configuration...\n\n")
+            return token, channel
+        except Exception as error:
+            print(f"{get_timestamp()} Error setting channel: {error}")
+            input("Press Enter to exit...")
+            sys.exit()
+    else:
+        print("No existing config found. Please run the configuration setup first.")
+        input("Press Enter to exit...")
+        sys.exit()
 
 
 def show_help():
@@ -138,7 +147,7 @@ def show_help():
     print("  'python hardlyknowifier.py'               :  Runs the bot. Sit back and watch pure comedy gold.")
     print("  'python hardlyknowifier.py --config'      :  Configure settings.")
     print("  'python hardlyknowifier.py --channel'     :  Set channel to send messages to.")
-    print("  'python hardlyknowifier.py --help'        :  Show help (You just did that lol).")
+    print("  'python hardlyknowifier.py --help'        :  Show help (You just did that lol).\n\n")
 
 
 def load_list_file(filename):
@@ -172,6 +181,8 @@ def get_arguments():
 
 
 def main():
+    get_arguments()
+    
     token, channel, ignore_self = read_config()
     if not token or not channel:
         print(f"{get_timestamp()} No config was found. Running configuration setup.")
