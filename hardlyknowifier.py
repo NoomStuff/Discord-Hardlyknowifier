@@ -15,7 +15,14 @@ BLACKLIST = [
     re.compile(r"n(?:[^a-z0-9\s]*[i1!\|]){1}(?:[^a-z0-9\s]*[g6bq9G]){2}(?:[^a-z0-9\s]*[e3a@r])?(?:[^a-z0-9\s]*[r|a|ah|uh])?", re.IGNORECASE),
     re.compile(r"\bf\W*[a@4e3]\W*[gq96]\W*a?r?s?\b",re.IGNORECASE),
     re.compile(r"\bf(?:[^a-z0-9\s]*[a@4e3]){1}(?:[^a-z0-9\s]*[gq96]){1}(?:[^a-z0-9\s]*[a@4])?(?:[^a-z0-9\s]*[r]?)\b", re.IGNORECASE),
-    re.compile(r"\bt\s*r\s*a\s*n\s*n\s*y\b", re.IGNORECASE)
+    re.compile(r"\bt\s*r\s*a\s*n\s*n\s*y\b", re.IGNORECASE),
+]
+IGNORED_SUFFIX_LIST = [
+    "s",
+    "es",
+    "ing",
+    "ed",
+    "ly",
 ]
 
 
@@ -68,11 +75,11 @@ def get_connection():
 def get_last_message(token, channel_id):
     try:
         headers = {"authorization": token, "host": "discord.com"}
-        connectionection = get_connection()
-        connectionection.request("GET", f"/api/v9/channels/{channel_id}/messages?limit=1", headers=headers)
-        response = connectionection.getresponse()
+        connection = get_connection()
+        connection.request("GET", f"/api/v9/channels/{channel_id}/messages?limit=1", headers=headers)
+        response = connection.getresponse()
         data = response.read().decode()
-        connectionection.close()
+        connection.close()
     except Exception as error:
         print(f"{get_timestamp()} Network error getting messages: {error}")
         return None
@@ -97,11 +104,11 @@ def send_message(token, channel_id, content):
 
     while True:
         try:
-            connectionection = get_connection()
-            connectionection.request("POST", f"/api/v9/channels/{channel_id}/messages", payload, headers)
-            response = connectionection.getresponse()
+            connection = get_connection()
+            connection.request("POST", f"/api/v9/channels/{channel_id}/messages", payload, headers)
+            response = connection.getresponse()
             body = response.read().decode()
-            connectionection.close()
+            connection.close()
         except Exception as error:
             print(f"{get_timestamp()} Network error sending message: {error}")
             return False
@@ -127,11 +134,10 @@ def set_channel():
     config = read_config()
     if config:
         try:
-            token = config[0]
             channel = input("Discord channel ID: ")
-            write_config(token, channel)
+            write_config(config[0], channel, config[2])
             print("\nWritten config to config.txt. Continuing with new configuration...\n\n")
-            return token, channel
+            return config[0], channel, config[2]
         except Exception as error:
             print(f"{get_timestamp()} Error setting channel: {error}")
             input("Press Enter to exit...")
@@ -210,7 +216,7 @@ def main():
         author = message.get("author", {}).get("id")
 
         if message_timestamp == last_timestamp:
-            time.sleep(1 + random.uniform(0.05, 0.25))
+            time.sleep(0.5 + random.uniform(0.05, 0.25))
             continue
         last_timestamp = message_timestamp
 
@@ -246,8 +252,9 @@ def main():
 
         for word in words:
             word = word.lower()
-            if word.endswith("s") and len(word) > 1:
-                word = word[:-1]
+            for suffix in sorted(IGNORED_SUFFIX_LIST, key=len, reverse=True):
+                if word.endswith(suffix) and len(word) > len(suffix):
+                    word = word[:-len(suffix)]
 
             if check_blacklist(word):
                 skip_reasons += f"'{word}' is blacklisted. "
@@ -271,7 +278,7 @@ def main():
                     skip_reasons += f"'{word}' is too long. "
                     continue
 
-                if word[-len(trigger)-1] in "aeiou":
+                if word[-len(trigger)-1] in "aeou":
                     skip_reasons += f"'{word}' has a vowel before '{trigger}'. "
                     continue
 
