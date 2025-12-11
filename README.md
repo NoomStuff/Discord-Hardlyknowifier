@@ -37,7 +37,7 @@ These are stored in `config.txt`. Rerun the script after the file is made.
 
 The script will automatically reply if:
 
-1. It contains at least one word ending in a trigger 
+1. It contains at least one word ending in a trigger from `triggers.txt`
 2. The word is *not* blacklisted (filters out slurs)
 3. The word is *not* in `ignored.txt`
 3. The word is *not* too short or too long
@@ -46,7 +46,7 @@ The script will automatically reply if:
 6. The word does not have 5 vowels or consonants in a row
 7. The word does not have more than 2 of the same letter in a row
 
-It also works with any casing, if it has an **s** at the end, and even if the message has multiple words that get triggered.
+It also works with any casing, if it has any suffixes like **s**, **ed**, or **ing** at the end, and even if the message has multiple words that get triggered.
 
 ## ⚙️ Options
 

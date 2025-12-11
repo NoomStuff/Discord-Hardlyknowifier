@@ -19,7 +19,6 @@ BLACKLIST = [
 ]
 IGNORED_SUFFIX_LIST = [
     "s",
-    "es",
     "ing",
     "ed",
     "ly",
@@ -246,7 +245,7 @@ def main():
         if "i hardly know 'er!" in content.lower():
             continue
 
-        words = re.findall(r"\b\w+\b", content)
+        words = re.findall(r"\b[a-zA-Z0-9]+\b", content)
         replied = False
         skip_reasons = ""
 
