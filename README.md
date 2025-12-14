@@ -65,6 +65,7 @@ python automessage.py --channel
 `--help`: Show argument help information for the script:
 ```
 python automessage.py --help
+```
 
 ---
 
